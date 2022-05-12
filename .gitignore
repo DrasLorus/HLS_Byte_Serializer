@@ -1,0 +1,22 @@
+# Binary directories
+.cache/
+bin/
+lib/
+build/
+ip/
+*_*_*_to_bytes_ip/
+*_*_*_from_bytes_ip/
+
+# Command Database
+compile_commands.json
+
+hls_files/*
+
+!hls_files/generated
+hls_files/generated/*
+!hls_files/generated/.empty
+
+!hls_files/templates
+hls_files/templates/*.tcl
+
+sources/top_converters/*.?pp

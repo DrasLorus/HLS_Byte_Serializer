@@ -1,0 +1,130 @@
+/*
+ *  Copyright or © or Copr. Université de Bretagne-Sud, Lab-STICC, Bordeaux-INP, IMS
+ *  Contributor(s) : Camille Monière (2022)
+ *  
+ *  camille.moniere@univ-ubs.fr, camille.moniere@ims-bordeaux.fr
+ *  
+ *  This software is a computer program whose purpose is to simulate and implement C-type
+ *  to bytes FPGA IPs.
+ *  
+ *  This software is governed by the CeCILL-B license under French law and
+ *  abiding by the rules of distribution of free software.  You can  use, 
+ *  modify and/ or redistribute the software under the terms of the CeCILL-B
+ *  license as circulated by CEA, CNRS and INRIA at the following URL
+ *  "http://www.cecill.info". 
+ *  
+ *  As a counterpart to the access to the source code and  rights to copy,
+ *  modify and redistribute granted by the license, users are provided only
+ *  with a limited warranty  and the software's author,  the holder of the
+ *  economic rights,  and the successive licensors  have only  limited
+ *  liability. 
+ *  
+ *  In this respect, the user's attention is drawn to the risks associated
+ *  with loading,  using,  modifying and/or developing or reproducing the
+ *  software by the user in light of its specific status of free software,
+ *  that may mean  that it is complicated to manipulate,  and  that  also
+ *  therefore means  that it is reserved for developers  and  experienced
+ *  professionals having in-depth computer knowledge. Users are therefore
+ *  encouraged to load and test the software's suitability as regards their
+ *  requirements in conditions enabling the security of their systems and/or 
+ *  data to be ensured and,  more generally, to use and operate it in the 
+ *  same conditions as regards security. 
+ *  
+ *  The fact that you are presently reading this means that you have had
+ *  knowledge of the CeCILL-B license and that you accept its terms.
+ */
+
+#include "top_converters/@TYPE@_@STRMLEN@_@ENDIAN@_to_bytes.hpp"
+
+#include <cmath>
+#include <cstdio>
+#include <random>
+#include <string>
+#include <cstring>
+
+using namespace std;
+using namespace hls;
+namespace {
+
+#if @ENDIAN@ == BE
+
+void @TYPE@2bytes_cpp(const @TYPE@ & in, uint8_t * __restrict out) {
+    constexpr size_t sizeofT = sizeof(@TYPE@);
+    for (uint8_t byte = 0; byte < sizeofT; byte++) {
+        out[byte] = uint8_t((in >> ((sizeofT - byte - 1) * 8)) & 0xFF);
+    }
+}
+
+#elif @ENDIAN@ == LE
+
+void @TYPE@2bytes_cpp(const @TYPE@ & in, uint8_t * __restrict out) {
+    constexpr size_t sizeofT = sizeof(@TYPE@);
+    for (uint8_t byte = 0; byte < sizeofT; byte++) {
+        out[byte] = uint8_t((in >> (byte * 8)) & 0xFF);
+    }
+}
+#else
+#error "Endianess (currently: @ENDIAN@) can be LE (true) or BE (false)"
+#endif
+
+} // namespace
+
+int main(int argc, char * argv[]) {
+
+    constexpr uint64_t rand_seed = 147689;
+
+    mt19937_64                       rng(rand_seed);
+    uniform_int_distribution<@TYPE@> uniform_dist(numeric_limits<@TYPE@>::min(), numeric_limits<@TYPE@>::max());
+
+    constexpr uint64_t n_data  = uint64_t(1e6f);
+    constexpr size_t   sizeofT = sizeof(@TYPE@);
+    constexpr int64_t min_runs = int64_t(1);
+    constexpr int64_t max_runs = int64_t(1e6f / float(@STRMLEN@));
+
+    int64_t n_runs = max_runs;
+    if (argc > 1) {
+        n_runs = std::max(std::min(int64_t(stoi(string(argv[1]))) / int64_t(@STRMLEN@), max_runs), min_runs);
+    }
+
+    @TYPE@ *  data_in = new @TYPE@[n_data];
+    uint8_t * results = new uint8_t[n_data * sizeofT];
+
+    hls::stream<@TYPE@>  strm_in;
+    hls::stream<uint8_t> strm_out;
+
+    int counted_errors = 0;
+
+    for (int64_t u = 0; u < n_runs; u++) {
+        for (uint64_t v = 0; v < @STRMLEN@; v++) {
+            const uint64_t local_idx = u * @STRMLEN@ + v;
+            data_in[local_idx]       = uniform_dist(rng);
+            @TYPE@2bytes_cpp(data_in[local_idx], results + local_idx * sizeofT);
+
+            strm_in.write(data_in[local_idx]);
+        }
+
+        @TYPE@_@STRMLEN@_@ENDIAN@_to_bytes(strm_in, strm_out);
+
+        for (uint64_t v = 0; v < @STRMLEN@; v++) {
+            const uint64_t local_idx = u * @STRMLEN@ + v;
+            for (size_t byte = 0; byte < sizeofT; byte++) {
+                const uint8_t processed = strm_out.read();
+                if (results[local_idx * (sizeofT) + byte] != processed) {
+                    counted_errors++;
+                    if (counted_errors < 100) {
+                        fprintf(stderr, "0x%02x != 0x%02x\n", (uint16_t) results[local_idx * (sizeofT) + byte], (uint16_t) processed);
+                    } else if (counted_errors == 100) {
+                        fprintf(stderr, "Too much errors to be reported on terminal.\n");
+                    }
+                }
+            }
+        }
+    }
+
+    delete[] data_in;
+    delete[] results;
+
+    printf("RESULTS %s, %d errors for %lu runs.\n", counted_errors == 0 ? "SUCCESS" : "FAILURE", counted_errors, n_runs);
+
+    return counted_errors;
+}
