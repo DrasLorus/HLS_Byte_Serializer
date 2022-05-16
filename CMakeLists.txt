@@ -154,25 +154,27 @@ target_include_directories (hls_uart_converters SYSTEM PUBLIC ${AP_INCLUDE_DIR})
 
 set (CFGIN_TO_TOP_CPP "sources/top_converters/type_strmlen_endian_to_bytes.cpp.in")
 set (CFGOUT_TO_TOP_CPP
-     "${CMAKE_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes.cpp"
+     "${CMAKE_CURRENT_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes.cpp"
 )
 configure_file (${CFGIN_TO_TOP_CPP} ${CFGOUT_TO_TOP_CPP} @ONLY)
 
 set (CFGIN_TO_TOP_HPP "sources/top_converters/type_strmlen_endian_to_bytes.hpp.in")
 set (CFGOUT_TO_TOP_HPP
-     "${CMAKE_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes.hpp"
+     "${CMAKE_CURRENT_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes.hpp"
 )
 configure_file (${CFGIN_TO_TOP_HPP} ${CFGOUT_TO_TOP_HPP} @ONLY)
 
 set (CFGIN_TO_TB_CPP "sources/top_converters/type_strmlen_endian_to_bytes_tb.cpp.in")
-set (CFGOUT_TO_TB_CPP
-     "${CMAKE_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes_tb.cpp"
+set (
+  CFGOUT_TO_TB_CPP
+  "${CMAKE_CURRENT_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes_tb.cpp"
 )
 configure_file (${CFGIN_TO_TB_CPP} ${CFGOUT_TO_TB_CPP} @ONLY)
 
 set (CFGIN_TO_TCL "hls_files/templates/script_type_strmlen_endian_to_bytes.tcl.in")
-set (CFGOUT_TO_TCL
-     "${CMAKE_SOURCE_DIR}/hls_files/generated/script_${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes.tcl"
+set (
+  CFGOUT_TO_TCL
+  "${CMAKE_CURRENT_SOURCE_DIR}/hls_files/generated/script_${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes.tcl"
 )
 configure_file (${CFGIN_TO_TCL} ${CFGOUT_TO_TCL} @ONLY)
 
@@ -186,26 +188,30 @@ target_link_libraries (hls_uart_${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes_tb hls_uar
 # ##################################################################################################
 
 set (CFGIN_FROM_TOP_CPP "sources/top_converters/type_strmlen_endian_from_bytes.cpp.in")
-set (CFGOUT_FROM_TOP_CPP
-     "${CMAKE_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes.cpp"
+set (
+  CFGOUT_FROM_TOP_CPP
+  "${CMAKE_CURRENT_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes.cpp"
 )
 configure_file (${CFGIN_FROM_TOP_CPP} ${CFGOUT_FROM_TOP_CPP} @ONLY)
 
 set (CFGIN_FROM_TOP_HPP "sources/top_converters/type_strmlen_endian_from_bytes.hpp.in")
-set (CFGOUT_FROM_TOP_HPP
-     "${CMAKE_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes.hpp"
+set (
+  CFGOUT_FROM_TOP_HPP
+  "${CMAKE_CURRENT_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes.hpp"
 )
 configure_file (${CFGIN_FROM_TOP_HPP} ${CFGOUT_FROM_TOP_HPP} @ONLY)
 
 set (CFGIN_FROM_TB_CPP "sources/top_converters/type_strmlen_endian_from_bytes_tb.cpp.in")
-set (CFGOUT_FROM_TB_CPP
-     "${CMAKE_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes_tb.cpp"
+set (
+  CFGOUT_FROM_TB_CPP
+  "${CMAKE_CURRENT_SOURCE_DIR}/sources/top_converters/${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes_tb.cpp"
 )
 configure_file (${CFGIN_FROM_TB_CPP} ${CFGOUT_FROM_TB_CPP} @ONLY)
 
 set (CFGIN_FROM_TCL "hls_files/templates/script_type_strmlen_endian_from_bytes.tcl.in")
-set (CFGOUT_FROM_TCL
-     "${CMAKE_SOURCE_DIR}/hls_files/generated/script_${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes.tcl"
+set (
+  CFGOUT_FROM_TCL
+  "${CMAKE_CURRENT_SOURCE_DIR}/hls_files/generated/script_${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes.tcl"
 )
 configure_file (${CFGIN_FROM_TCL} ${CFGOUT_FROM_TCL} @ONLY)
 
@@ -217,27 +223,29 @@ target_link_libraries (hls_uart_${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes_tb hls_u
 if (ENABLE_TESTING)
   include (CTest)
 
+  if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.19.0)
+    cmake_policy (SET CMP0110 NEW)
+  endif ()
+
   # find_file (INPUT_DAT_TB input.dat HINTS data NO_CACHE REQUIRED)
   if (CMAKE_VERSION VERSION_LESS 3.19.0)
     set (TEST_NAME_TO
-         "\"Xilinx C-Simulation Testbench ${CMAKE_PROJECT_NAME} ${TYPE} ${STRMLEN} ${ENDIAN} TO\""
+         "\"Xilinx C-Simulation Testbench ${PROJECT_NAME} ${TYPE} ${STRMLEN} ${ENDIAN} TO\""
     )
   else ()
-    cmake_policy (SET CMP0110 NEW)
     set (TEST_NAME_TO
-         "Xilinx C-Simulation Testbench ${CMAKE_PROJECT_NAME} ${TYPE} ${STRMLEN} ${ENDIAN} TO"
+         "Xilinx C-Simulation Testbench ${PROJECT_NAME} ${TYPE} ${STRMLEN} ${ENDIAN} TO"
     )
   endif ()
   add_test (NAME ${TEST_NAME_TO} COMMAND hls_uart_${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes_tb)
 
   if (CMAKE_VERSION VERSION_LESS 3.19.0)
     set (TEST_NAME_FROM
-         "\"Xilinx C-Simulation Testbench ${CMAKE_PROJECT_NAME} ${TYPE} ${STRMLEN} ${ENDIAN} FROM\""
+         "\"Xilinx C-Simulation Testbench ${PROJECT_NAME} ${TYPE} ${STRMLEN} ${ENDIAN} FROM\""
     )
   else ()
-    cmake_policy (SET CMP0110 NEW)
     set (TEST_NAME_FROM
-         "Xilinx C-Simulation Testbench ${CMAKE_PROJECT_NAME} ${TYPE} ${STRMLEN} ${ENDIAN} FROM"
+         "Xilinx C-Simulation Testbench ${PROJECT_NAME} ${TYPE} ${STRMLEN} ${ENDIAN} FROM"
     )
   endif ()
   add_test (NAME ${TEST_NAME_FROM} COMMAND hls_uart_${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes_tb)
@@ -255,50 +263,56 @@ if (ENABLE_TESTING)
         "1"
         CACHE INTERNAL "EXPORT_IP"
       )
-      if (XILINX_IMPL)
-        set (
-          RUN_IMPL
-          "1"
-          CACHE INTERNAL "RUN_IMPL"
-        )
-      endif ()
+    else ()
+      unset (EXPORT_IP CACHE)
     endif ()
+
+    if (XILINX_IMPL)
+      set (
+        RUN_IMPL
+        "1"
+        CACHE INTERNAL "RUN_IMPL"
+      )
+    else ()
+      unset (RUN_IMPL CACHE)
+    endif ()
+
     add_custom_target (
       run_hls_to
       COMMAND ${XILINX_HLS} ${CFGOUT_TO_TCL} ${XILINX_TESTLINES} ${EXPORT_IP} ${RUN_IMPL}
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/hls_files
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/hls_files
       USES_TERMINAL
     )
 
     add_custom_target (
       run_hls_from
       COMMAND ${XILINX_HLS} ${CFGOUT_FROM_TCL} ${XILINX_TESTLINES} ${EXPORT_IP} ${RUN_IMPL}
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/hls_files
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/hls_files
       USES_TERMINAL
     )
 
     if (CMAKE_VERSION VERSION_LESS 3.19.0)
       set (TCL_TEST_NAME "\"Xilinx HLS TCL Flow TO\"")
     else ()
-      cmake_policy (SET CMP0110 NEW)
       set (TCL_TEST_NAME "Xilinx HLS TCL Flow TO")
     endif ()
     add_test (
       NAME ${TCL_TEST_NAME}
       COMMAND ${XILINX_HLS} ${CFGOUT_TO_TCL} ${XILINX_TESTLINES} 0 0
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/hls_files
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/hls_files
     )
+    set_property (TEST ${TCL_TEST_NAME} DISABLED TRUE)
 
     if (CMAKE_VERSION VERSION_LESS 3.19.0)
       set (TCL_TEST_NAME "\"Xilinx HLS TCL Flow FROM\"")
     else ()
-      cmake_policy (SET CMP0110 NEW)
       set (TCL_TEST_NAME "Xilinx HLS TCL Flow FROM")
     endif ()
     add_test (
       NAME ${TCL_TEST_NAME}
       COMMAND ${XILINX_HLS} ${CFGOUT_FROM_TCL} ${XILINX_TESTLINES} 0 0
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/hls_files
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/hls_files
     )
+    set_property (TEST ${TCL_TEST_NAME} DISABLED TRUE)
   endif ()
 endif ()

@@ -78,9 +78,9 @@ set STRMLEN @STRMLEN@
 set clk     "100MHz"
 
 if [ expr {$VERSION > 2020.0} ] {
-    set CFLAGS "-std=c++11 -Wno-unknown-pragmas -Wno-unused-label -Wall -DNDEBUG -DXILINX_MAJOR=${XILINX_MAJOR} -isystem ${ROOT_DIR}/hls_max_template/sources/modules -I${ROOT_DIR}/sources -I${ROOT_DIR}/CORDIC_Rotate_APFX/RomGenerators/sources"
+    set CFLAGS "-std=c++11 -Wno-unknown-pragmas -Wno-unused-label -Wall -DNDEBUG -DXILINX_MAJOR=${XILINX_MAJOR} -I${ROOT_DIR}/sources"
 } else {
-    set CFLAGS "-std=c++0x -Wno-unknown-pragmas -Wno-unused-label -Wall -DNDEBUG -DXILINX_MAJOR=${XILINX_MAJOR} -isystem ${ROOT_DIR}/hls_max_template/sources/modules -I${ROOT_DIR}/sources -I${ROOT_DIR}/CORDIC_Rotate_APFX/RomGenerators/sources"
+    set CFLAGS "-std=c++0x -Wno-unknown-pragmas -Wno-unused-label -Wall -DNDEBUG -DXILINX_MAJOR=${XILINX_MAJOR} -I${ROOT_DIR}/sources"
 }
 
 
@@ -114,18 +114,18 @@ csim_design -clean -O -argv "${NLINES}"
 csynth_design
 cosim_design -O -argv "${NLINES}"
 
-if { $EXPORT_IP } {
-    config_export                                                                   \
-        -rtl verilog                                                                \
-        -format ip_catalog                                                          \
-        -description "Convert ${STRMLEN} ${TYPE} to bytes ${ENDIAN} at ${clk}"      \
-        -vendor "DrasLorus"                                                         \
-        -display_name "${STRMLEN} ${TYPE} bus to ${ENDIAN} bytes converter ${clk}"  \
-        -version "0.1.00${XILINX_MAJOR}"                                            \
-        -ipname "${TYPE}2bytes${ENDIAN}_${STRMLEN}_${clk}"                          \
-        -vivado_optimization_level 2                                                \
-        -vivado_phys_opt route
+config_export                                                                   \
+    -rtl verilog                                                                \
+    -format ip_catalog                                                          \
+    -description "Convert ${STRMLEN} ${TYPE} to bytes ${ENDIAN} at ${clk}"      \
+    -vendor "DrasLorus"                                                         \
+    -display_name "${STRMLEN} ${TYPE} bus to ${ENDIAN} bytes converter ${clk}"  \
+    -version "0.1.00${XILINX_MAJOR}"                                            \
+    -ipname "${TYPE}2bytes${ENDIAN}_${STRMLEN}_${clk}"                          \
+    -vivado_optimization_level 2                                                \
+    -vivado_phys_opt route
 
+if { $EXPORT_IP } {
     if [ expr {! [ file isdirectory "${ROOT_DIR}/ip" ] } ] {
         if { [ file exists "${ROOT_DIR}/ip" ] } {
             file remove "${ROOT_DIR}/ip"
@@ -140,10 +140,10 @@ if { $EXPORT_IP } {
         set IP_FILE [glob -directory "${PROJECT_NAME}/${SOLUTION_NAME}/impl/ip" -- "*.zip"]
         file copy -force -- "${IP_FILE}" "${ROOT_DIR}/ip/${TYPE}2bytes${ENDIAN}_${STRMLEN}_${clk}_${XILINX_MAJOR}.zip"
     }
+}
 
-    if { $RUN_IMPL } {
-        export_design -flow impl 
-    }
+if { $RUN_IMPL } {
+    export_design -flow impl 
 }
 
 close_solution
