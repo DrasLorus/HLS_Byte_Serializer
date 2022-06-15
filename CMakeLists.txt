@@ -70,11 +70,63 @@ option (PEDANTIC "use -Wall and -pedantic." ON)
 # ##################################################################################################
 
 set (
+  PRM_ITF_BLK
+  "ap_ctrl_chain"
+  CACHE STRING "Block-level interface protocol."
+)
+set_property (
+  CACHE PRM_ITF_BLK
+  PROPERTY STRINGS
+           "ap_ctrl_none"
+           "ap_ctrl_hs"
+           "ap_ctrl_chain"
+)
+set (ITF_BLK ${PRM_ITF_BLK})
+
+set (
+  PRM_ITF_IN
+  "axis"
+  CACHE STRING "Input stream interface protocol."
+)
+set_property (
+  CACHE PRM_ITF_IN
+  PROPERTY STRINGS
+           "ap_hs"
+           "ap_fifo"
+           "axis"
+)
+set (ITF_IN ${PRM_ITF_IN})
+
+set (
+  PRM_ITF_OUT
+  "axis"
+  CACHE STRING "Output stream interface protocol."
+)
+set_property (
+  CACHE PRM_ITF_OUT
+  PROPERTY STRINGS
+           "ap_hs"
+           "ap_fifo"
+           "axis"
+)
+set (ITF_OUT ${PRM_ITF_OUT})
+
+set (
   PRM_TYPE
   "uint32_t"
   CACHE STRING "Type to convert to/from."
 )
 set (TYPE ${PRM_TYPE})
+set (
+  PRM_SIGNED
+  OFF
+  CACHE BOOL "If Type is signed or not."
+)
+if (PRM_SIGNED)
+  set (SIGNED "true")
+else ()
+  set (SIGNED "false")
+endif ()
 
 set (
   PRM_STRMLEN

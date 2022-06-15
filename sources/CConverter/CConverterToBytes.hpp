@@ -41,11 +41,11 @@
 #include <cstdint>
 #include <hls_stream.h>
 
-template <uint32_t stream_len = 1, bool LittleEndian = true>
+template <uint32_t stream_len = 1, bool LittleEndian = true, bool use_sign = false>
 class CConverterToBytes;
 
 template <uint32_t stream_len>
-class CConverterToBytes<stream_len, true> {
+class CConverterToBytes<stream_len, true, false> {
 public:
     template <typename T, uint32_t sizeofT = sizeof(T)>
     static void process(hls::stream<T> & strm_in, hls::stream<uint8_t> & strm_out) {
@@ -68,7 +68,7 @@ public:
 };
 
 template <uint32_t stream_len>
-class CConverterToBytes<stream_len, false> {
+class CConverterToBytes<stream_len, false, false> {
 public:
     template <typename T, uint32_t sizeofT = sizeof(T)>
     static void process(hls::stream<T> & strm_in, hls::stream<uint8_t> & strm_out) {
@@ -79,6 +79,54 @@ public:
     LOOP_STR_T2B_BE:
         for (uint32_t u = 0; u < stream_len; u++) {
             ap_uint<sizeofT * 8> word_buffer = strm_in.read();
+        LOOP_BYTE_T2B_BE:
+            for (uint32_t v = 0; v < sizeofT; v++) {
+                const ap_uint<8> byte_buffer = word_buffer(sizeofT * 8 - 1, (sizeofT - 1) * 8);
+
+                strm_out.write(byte_buffer);
+                word_buffer <<= 8;
+            }
+        }
+    }
+};
+
+// SIGNED
+
+template <uint32_t stream_len>
+class CConverterToBytes<stream_len, true, true> {
+public:
+    template <typename T, uint32_t sizeofT = sizeof(T)>
+    static void process(hls::stream<T> & strm_in, hls::stream<uint8_t> & strm_out) {
+#if !defined(XILINX_MAJOR)
+        static_assert(std::numeric_limits<T>::is_integer, "T must be an integer C-type.");
+        static_assert(std::is_signed<T>(), "T must be an signed type.");
+#endif
+    LOOP_STR_T2B_LE:
+        for (uint32_t u = 0; u < stream_len; u++) {
+            ap_int<sizeofT * 8> word_buffer = strm_in.read();
+        LOOP_BYTE_T2B_LE:
+            for (uint32_t v = 0; v < sizeofT; v++) {
+                const ap_uint<8> byte_buffer = word_buffer(7, 0);
+
+                strm_out.write(byte_buffer);
+                word_buffer >>= 8;
+            }
+        }
+    }
+};
+
+template <uint32_t stream_len>
+class CConverterToBytes<stream_len, false, true> {
+public:
+    template <typename T, uint32_t sizeofT = sizeof(T)>
+    static void process(hls::stream<T> & strm_in, hls::stream<uint8_t> & strm_out) {
+#if !defined(XILINX_MAJOR)
+        static_assert(std::numeric_limits<T>::is_integer, "T must be an integer C-type.");
+        static_assert(std::is_signed<T>(), "T must be an signed type.");
+#endif
+    LOOP_STR_T2B_BE:
+        for (uint32_t u = 0; u < stream_len; u++) {
+            ap_int<sizeofT * 8> word_buffer = strm_in.read();
         LOOP_BYTE_T2B_BE:
             for (uint32_t v = 0; v < sizeofT; v++) {
                 const ap_uint<8> byte_buffer = word_buffer(sizeofT * 8 - 1, (sizeofT - 1) * 8);

@@ -37,5 +37,10 @@
 #include "top_converters/@TYPE@_@STRMLEN@_@ENDIAN@_to_bytes.hpp"
 
 void @TYPE@_@STRMLEN@_@ENDIAN@_to_bytes(hls::stream<@TYPE@> & strm_in, hls::stream<uint8_t> & strm_out) {
-    CConverterToBytes<@STRMLEN@, @ENDIAN@>::process(strm_in, strm_out);
+    // clang-foramt off
+#pragma HLS interface @ITF_BLK@ port=return
+#pragma HLS interface @ITF_IN@  port=strm_in
+#pragma HLS interface @ITF_OUT@ port=strm_out
+    // clang-foramt on
+    CConverterToBytes<@STRMLEN@, @ENDIAN@, @SIGNED@>::process(strm_in, strm_out);
 }

@@ -108,7 +108,9 @@ if { [ file exists "directives.tcl" ] } {
     source "directives.tcl"
 }
 
-set_directive_interface -mode ap_ctrl_none ${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes
+# set_directive_interface -mode @ITF_BLK@ ${TYPE}_${STRMLEN}_${ENDIAN}_to_bytes
+# set_directive_interface -mode @ITF_IN@  ${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes strm_in
+# set_directive_interface -mode @ITF_OUT@ ${TYPE}_${STRMLEN}_${ENDIAN}_from_bytes strm_out
 
 csim_design -clean -O -argv "${NLINES}"
 csynth_design
